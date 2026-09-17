@@ -28,7 +28,7 @@ Both encoders reach the perfect game of 61 in individual episodes.
 - Reward grid, death × step penalty: step −0.25 is best, −0.5 hurts everywhere ([heatmap](figures/4_reward_grid_heatmap.png)).
 - n-step returns matter most for the MLP: 1-step 20.2, 3-step 32.0, 10-step 43.6; removing PBRS or Double costs less ([bars](figures/feat_ablation.png)).
 
-One seed per configuration; curves are still rising at the end of training.
+One seed per configuration; curves are still rising at the end of training. Scores are not comparable across encoders: the MLP runs add n-step returns and PBRS and train for 3,000 episodes, the CNN runs for 4,000.
 
 ## Course report
 
