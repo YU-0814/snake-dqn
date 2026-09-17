@@ -1,0 +1,11 @@
+{
+ "name": "feat_full_no_pbrs",
+ "encoder": "feat",
+ "double": true,
+ "eps_min": 0,
+ "death": -12,
+ "target": 10,
+ "n_step": 3,
+ "pbrs": false,
+ "explore_step": 15000
+}

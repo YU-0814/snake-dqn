@@ -1,0 +1,11 @@
+{
+ "name": "feat_full_n5",
+ "encoder": "feat",
+ "double": true,
+ "eps_min": 0,
+ "death": -12,
+ "target": 10,
+ "n_step": 5,
+ "pbrs": true,
+ "explore_step": 15000
+}

@@ -1,0 +1,7 @@
+{
+ "name": "cnn_eps0",
+ "encoder": "cnn",
+ "episodes": 4000,
+ "explore_step": 15000,
+ "eps_min": 0
+}

@@ -1,0 +1,6 @@
+{
+ "name": "cnn_baseline",
+ "encoder": "cnn",
+ "episodes": 4000,
+ "explore_step": 15000
+}
