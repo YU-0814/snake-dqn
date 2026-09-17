@@ -9,7 +9,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from dqn import BOARD, GAMMA, CNN, MLP, Agent, head_food_distance, ray_features
+from dqn import BOARD, CNN, Agent
 from snake_env import SnakeGameEnv
 
 INIT_LENGTH = 3
@@ -27,20 +27,11 @@ def run(cfg):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.set_num_threads(cfg.get("threads", 8))
-    use_cnn = cfg.get("encoder", "cnn") == "cnn"
-    env = SnakeGameEnv(board_size=BOARD, n_channel=4 if use_cnn else 1, n_target=1,
-                       death_penalty=cfg.get("death", -10.0), step_reward=cfg.get("step", -0.01),
-                       target_reward=cfg.get("target", 1.0))
-    if use_cnn:
-        model, target = CNN(4, 4, cfg.get("gap", False)), CNN(4, 4, cfg.get("gap", False))
-        model.apply(kaiming)
-    else:
-        model, target = MLP(4), MLP(4)
+    env = SnakeGameEnv(board_size=BOARD, n_channel=4, n_target=1, death_penalty=cfg.get("death", -10.0),
+                       step_reward=cfg.get("step", -0.01), target_reward=cfg.get("target", 1.0))
+    model, target = CNN(4, 4, cfg.get("gap", False)), CNN(4, 4, cfg.get("gap", False))
+    model.apply(kaiming)
     agent = Agent(model, target, cfg)
-    pbrs = cfg.get("pbrs", False)
-
-    def state_of(obs, info, action):
-        return (obs > 0).astype(np.float32) if use_cnn else ray_features(env, info.get("prev_action", action))
 
     out = os.path.join("results", cfg["name"])
     os.makedirs(out, exist_ok=True)
@@ -48,22 +39,15 @@ def run(cfg):
         json.dump(cfg, f, indent=1)
 
     scores, t0 = [], time.time()
-    for ep in range(1, cfg.get("episodes", 3000) + 1):
+    for ep in range(1, cfg.get("episodes", 4000) + 1):
         obs, info = env.reset(seed=seed * 100000 + ep)
-        state = state_of(obs, info, -1)
-        agent.nbuf.clear()
+        state = (obs > 0).astype(np.float32)
         done, no_food_steps, length = False, 0, info["snake_length"]
-        phi = -head_food_distance(env) if pbrs else 0.0
         while not done:
             action = agent.act(state)
             obs, reward, terminated, _, info = env.step(action)
-            next_state = state_of(obs, info, action)
+            next_state = (obs > 0).astype(np.float32)
             ate = info["snake_length"] > length
-            if pbrs:
-                phi_next = -head_food_distance(env)
-                if not ate:
-                    reward += GAMMA * phi_next - phi
-                phi = phi_next
             no_food_steps = 0 if ate else no_food_steps + 1
             length = info["snake_length"]
             done = terminated or no_food_steps >= MAX_STEPS_WITHOUT_FOOD

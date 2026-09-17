@@ -33,19 +33,11 @@ With ε_min = 0 + GAP fixed and food +10, a 3×3 grid over death penalty {−10,
 
 One 8×8 board with one food item; one seed per configuration; curves still rising at 4,000 episodes.
 
-## Appendix: ray-feature MLP
-
-An MLP on 28 hand-made features (8 rays × [food visible, 1/distance to body, 1/distance to wall] + heading), 3,000 episodes. Double DQN + ε_min 0 + reward (−12 / +10) + 3-step returns + PBRS: 32.0; with 10-step returns 43.6. n-step length is the dominant factor. Not comparable with the CNN numbers above (different components and episode budget).
-
-<p align="center"><img src="figures/feat_ablation.png" width="720"></p>
-
 ## Run
 
 ```bash
 pip install -r requirements.txt
 python train.py configs/cnn_grid_d14_s0.25.json   # step 4 best, ~80 min on 8 threads
-python train.py configs/feat_full_n10.json         # appendix best, ~35 min
-python analysis/plot_feat_ablation.py
 ```
 
-`results/` holds the histories of all 21 runs and the best models; runs are seeded and deterministic on CPU. `snake_env.py` is the course-provided environment, unmodified.
+`results/` holds the histories of all 13 runs and the best model; runs are seeded and deterministic on CPU. `snake_env.py` is the course-provided environment, unmodified.

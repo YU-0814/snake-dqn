@@ -1,6 +1,5 @@
 {
  "name": "cnn_eps0_gap",
- "encoder": "cnn",
  "episodes": 4000,
  "explore_step": 15000,
  "gap": true,
