@@ -1,46 +1,51 @@
 # Snake DQN
 
-DQN agents for Snake on an 8×8 board (61 food = board full), trained on CPU. Two encoders: a CNN on the 4-channel grid and an MLP on 8-ray features. Course project, Reinforcement Learning, Pusan National University, 2026.
+DQN on an 8×8 Snake board (61 food = board full), trained on CPU. Course project, Reinforcement Learning, Pusan National University, 2026. Four steps, each a hypothesis tested against the previous run; scores are the mean food eaten over the last 300 of 4,000 episodes, one seed.
 
-## Results
+## 1. Baseline: 9.8
 
-Food eaten, mean of the last 300 episodes (one seed, 3,000–4,000 episodes):
+CNN on the 4-channel grid (body / head / tail / food, binarized), flatten head, ε linearly decayed to a floor of 0.05. Plateaus around 10 ([curve](figures/1_baseline_curve.png)). [notebook](report/1_baseline.ipynb)
 
-| Encoder | Configuration | Score |
-|---|---|---|
-| CNN | baseline (flatten head, ε_min 0.05) | 9.8 |
-| | ε_min 0 | 24.6 |
-| | ε_min 0 + global average pooling | 33.8 |
-| | + reward (death −14, step −0.25, food +10) | **37.3** |
-| MLP | Double DQN | 8.8 |
-| | + ε_min 0 + reward (death −12, food +10) + 3-step returns + PBRS | 32.0 |
-| | same, 10-step returns | **43.6** |
+## 2. ε_min = 0: 24.6
 
-Both encoders reach the perfect game of 61 in individual episodes.
+Hypothesis: the 5% random-action floor is what kills the agent. Once the snake is long, a single random move is a collision ([gif](report/figs/eps_crash_short.gif)). Setting ε_min = 0 and changing nothing else gives 9.8 → 24.6. [notebook](report/2_eps_min_zero.ipynb)
+
+<p align="center"><img src="figures/2_eps_min_zero_vs_baseline.png" width="640"></p>
+
+## 3. Global average pooling: 33.8
+
+Hypothesis: the flatten head overfits absolute positions, while what matters is the relative position of head, body and food. Replacing flatten with global average pooling gives 11.0 on its own (the ε floor still kills it) and 33.8 together with ε_min = 0. [notebook](report/3_global_average_pooling.ipynb)
+
+<p align="center"><img src="figures/3_ablation_eps_gap.png" width="640"></p>
+
+## 4. Reward shaping: 37.3, and a perfect game
+
+With ε_min = 0 + GAP fixed and food +10, a 3×3 grid over death penalty {−10, −12, −14} × step penalty {−0.1, −0.25, −0.5}. Step −0.25 is best, −0.5 hurts everywhere; death −14 / step −0.25 reaches 37.3 and fills the board in individual episodes. [notebook](report/4_reward_grid_and_ablation.ipynb)
 
 <p align="center">
-  <img src="report/figs/grid_best_perfect.gif" width="300">
-  <img src="figures/4_ablation.png" width="560">
+  <img src="figures/4_reward_grid_heatmap.png" width="330">
+  <img src="report/figs/grid_best_perfect.gif" width="260">
 </p>
 
-- ε_min = 0: a 5% random-action floor kills a long snake ([gif](report/figs/eps_crash_short.gif)); removing it gives 9.8 → 24.6 ([curve](figures/2_eps_min_zero_vs_baseline.png)).
-- Global average pooling helps only with ε_min = 0 (11.0 alone, 33.8 together) ([curve](figures/3_ablation_eps_gap.png)).
-- Reward grid, death × step penalty: step −0.25 is best, −0.5 hurts everywhere ([heatmap](figures/4_reward_grid_heatmap.png)).
-- n-step returns matter most for the MLP: 1-step 20.2, 3-step 32.0, 10-step 43.6; removing PBRS or Double costs less ([bars](figures/feat_ablation.png)).
+<p align="center"><img src="figures/4_ablation.png" width="640"></p>
 
-One seed per configuration; curves are still rising at the end of training. Scores are not comparable across encoders: the MLP runs add n-step returns and PBRS and train for 3,000 episodes, the CNN runs for 4,000.
+## Limitations
 
-## Course report
+One 8×8 board with one food item; one seed per configuration; curves still rising at 4,000 episodes.
 
-Original notebooks with outputs (Korean): [1 baseline](report/1_baseline.ipynb) · [2 ε_min = 0](report/2_eps_min_zero.ipynb) · [3 global average pooling](report/3_global_average_pooling.ipynb) · [4 reward grid, ablation, limitations](report/4_reward_grid_and_ablation.ipynb)
+## Appendix: ray-feature MLP
+
+An MLP on 28 hand-made features (8 rays × [food visible, 1/distance to body, 1/distance to wall] + heading), 3,000 episodes. Double DQN + ε_min 0 + reward (−12 / +10) + 3-step returns + PBRS: 32.0; with 10-step returns 43.6. n-step length is the dominant factor. Not comparable with the CNN numbers above (different components and episode budget).
+
+<p align="center"><img src="figures/feat_ablation.png" width="720"></p>
 
 ## Run
 
 ```bash
 pip install -r requirements.txt
-python train.py configs/cnn_grid_d14_s0.25.json   # best CNN, ~80 min on 8 threads
-python train.py configs/feat_full_n10.json         # best MLP, ~35 min
+python train.py configs/cnn_grid_d14_s0.25.json   # step 4 best, ~80 min on 8 threads
+python train.py configs/feat_full_n10.json         # appendix best, ~35 min
 python analysis/plot_feat_ablation.py
 ```
 
-`results/` holds the histories of all 21 runs above and the best models; runs are seeded and deterministic on CPU. `snake_env.py` is the course-provided environment, unmodified.
+`results/` holds the histories of all 21 runs and the best models; runs are seeded and deterministic on CPU. `snake_env.py` is the course-provided environment, unmodified.
