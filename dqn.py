@@ -34,7 +34,7 @@ class Agent:
         self.batch = cfg.get("batch", 64)
         self.train_start = cfg.get("train_start", 2000)
         self.eps, self.eps_min = 1.0, cfg.get("eps_min", 0.05)
-        self.eps_dec = (self.eps - self.eps_min) / cfg.get("explore_step", 20000)
+        self.eps_dec = (self.eps - self.eps_min) / cfg.get("explore_step", 15000)
         self.target_update = cfg.get("target_update", 1000)
         self.steps = 0
         self.memory = deque(maxlen=cfg.get("memory", 50000))

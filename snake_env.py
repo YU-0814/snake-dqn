@@ -1,5 +1,4 @@
-# Snake environment provided by the reinforcement learning course (Pusan National University, 2026).
-# Used unmodified; see README.
+# Snake environment provided by the Reinforcement Learning course, Pusan National University, Spring 2026. Used unmodified.
 import numpy as np
 from collections import deque
 import pygame
