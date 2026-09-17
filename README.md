@@ -29,10 +29,6 @@ With ε_min = 0 and GAP fixed and food reward +10, a 3×3 grid over death penalt
 
 <p align="center"><img src="figures/4_ablation.png" width="640"></p>
 
-## Limitations
-
-One 8×8 board with one food item; one seed per configuration; curves still rising at 4,000 episodes.
-
 ## Run
 
 ```bash
